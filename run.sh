@@ -9,4 +9,4 @@ dir=`pwd`
 cd "$wd"
 cd `dirname "$0"`
 
-mvn exec:java -Dexec.args="$dir"
+mvn compile exec:java -Dexec.args="$dir"
