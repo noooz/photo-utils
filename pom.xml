@@ -40,7 +40,7 @@
 							</goals>
 						</execution>
 					</executions>
-					<configuration>
+					<configuration>					
 						<mainClass>com.heideblitz.Main</mainClass>
 					</configuration>
 				</plugin>
