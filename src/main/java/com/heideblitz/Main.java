@@ -58,7 +58,7 @@ public class Main {
 		for (File file : files) {
 			n++;
 			String ext = extMap.get(file);
-			File newFile = new File(file.getParent(), String.format("%04d", n) + (ext == null ? "" : "." + ext));
+			File newFile = new File(file.getParent(), (String.format("%04d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
 			System.out.println("'" + file.getName() + "' -> '" + newFile.getName() + "'");
 			file.renameTo(newFile);
 			tempFileMap.remove(file);
