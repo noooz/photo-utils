@@ -9,4 +9,5 @@ dir=`pwd`
 cd "$wd"
 cd `dirname "$0"`
 
+echo "scanning files in: $dir"
 mvn compile exec:java -Dexec.args="$dir"
