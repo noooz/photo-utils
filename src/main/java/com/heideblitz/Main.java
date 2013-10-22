@@ -67,6 +67,10 @@ public class Main {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
+			if(date == null){
+				System.err.println("date is null: " + originalFile.getName());
+			}
 
 			// rename to temp
 			tempFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
