@@ -17,6 +17,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 
 public class Main {
 	
+	private final static int DIGITS = 4;
 	private static boolean reverseOrdered = false;
 	
 	public static void main(String[] args) throws Throwable {
@@ -36,7 +37,12 @@ public class Main {
 			int n = 0;
 			for (FileInfo file : files) {
 				n++;
-				file.renameTo(n);
+				if(reverseOrdered){
+					file.renameTo((int)Math.pow(10, DIGITS) - n);
+				}else{
+					file.renameTo(n);
+				}
+				
 			}
 		} catch (Throwable e) {
 			for (FileInfo file : files) {
@@ -94,7 +100,7 @@ public class Main {
 
 		public void renameTo(int n) {
 			String ext = getExtension();
-			File newFile = new File(originalFile.getParent(), (String.format("%04d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
+			File newFile = new File(originalFile.getParent(), (String.format("%0" + DIGITS + "d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
 			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "' (" + getDate() + ")");
 			tempFile.renameTo(newFile);
 			tempFile = null;
