@@ -2,14 +2,12 @@ package com.heideblitz;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -18,6 +16,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 public class Main {
 	
 	private final static int DIGITS = 4;
+	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 	private static boolean reverseOrdered = false;
 	
 	public static void main(String[] args) throws Throwable {
@@ -100,7 +99,11 @@ public class Main {
 
 		public void renameTo(int n) {
 			String ext = getExtension();
-			File newFile = new File(originalFile.getParent(), (String.format("%0" + DIGITS + "d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
+			Date d = getDate();
+			File newFile = new File(originalFile.getParent(), //
+					(String.format("%0" + DIGITS + "d", n) + //
+					(d == null ? "" : "_" + DATE_FORMAT.format(d)) + //		
+					(ext == null ? "" : "." + ext)).toLowerCase());
 			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "' (" + getDate() + ")");
 			tempFile.renameTo(newFile);
 			tempFile = null;
