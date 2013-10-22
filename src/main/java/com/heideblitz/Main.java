@@ -24,9 +24,13 @@ public class Main {
 	public static void main(String[] args) throws Throwable {
 		orderDescending = args.length > 1 && args[1].trim().length() > 0;
 		
+		renameFilesInDirectory(new File(args[0]));
+	}
+	
+	private static void renameFilesInDirectory(File directory){
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
-			for (File file : new File(args[0]).listFiles()) {
+			for (File file : directory.listFiles()) {
 				if (!file.isFile() || file.getName().startsWith(".")) {
 					continue;
 				}
