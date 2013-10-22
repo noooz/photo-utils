@@ -129,12 +129,12 @@ public class Main {
 				return originalFile.getName().compareTo(fileInfo.originalFile.getName());
 			}
 			if (d1 == null) {
-				return -1;
+				return (orderDescending ? 1 : -1);
 			}
 			if (d2 == null) {
-				return 1;
+				return (orderDescending ? -1 : 1);
 			}
-			return d1.compareTo(d2) * (orderDescending ? -1 : 1);
+			return d1.compareTo(d2);
 		}
 
 	}
