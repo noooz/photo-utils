@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -18,62 +17,99 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 
 public class Main {
 	public static void main(String[] args) throws Throwable {
-		final Map<File, String> extMap = new HashMap<File, String>();
-		final Map<File, File> tempFileMap = new HashMap<File, File>();
-
-		List<File> files = new ArrayList<File>();
+		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
 			for (File file : new File(args[0]).listFiles()) {
 				if (file.getName().startsWith(".")) {
 					continue;
 				}
-				File newFile = File.createTempFile(file.getName() + "__", "",
-						file.getParentFile());
-				files.add(newFile);
-				file.renameTo(newFile);
-				tempFileMap.put(newFile, file);
-
-				String name = file.getName();
-				int idx = name.lastIndexOf('.');
-				if (idx >= 0) {
-					extMap.put(newFile, name.substring(idx + 1));
-				}
+				files.add(new FileInfo(file));
 			}
 
-			final SortedMap<File, Date> dateMap = new TreeMap<File, Date>();
-			for (File file : files) {
-				ExifIFD0Directory directory = ImageMetadataReader.readMetadata(
-						file).getDirectory(ExifIFD0Directory.class);
-				Date date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
-				System.out.println(file + ": " + date);
-				dateMap.put(file, date);
-			}
-
-			Collections.sort(files, new Comparator<File>() {
-				@Override
-				public int compare(File o1, File o2) {
-					return dateMap.get(o1).compareTo(dateMap.get(o2));
-				}
-			});
+			Collections.sort(files);
 
 			int n = 0;
-			for (File file : files) {
+			for (FileInfo file : files) {
 				n++;
-				String ext = extMap.get(file);
-				File newFile = new File(file.getParent(),
-						(String.format("%04d", n) + (ext == null ? "" : "."
-								+ ext)).toLowerCase());
-				System.out.println("'" + file.getName() + "' -> '"
-						+ newFile.getName() + "'");
-				file.renameTo(newFile);
-				tempFileMap.remove(file);
+				file.renameTo(n);
 			}
-
 		} catch (Throwable e) {
-			for (Map.Entry<File, File> entry : tempFileMap.entrySet()) {
-				entry.getKey().renameTo(entry.getValue());
+			for (FileInfo file : files) {
+				file.revertRenaming();
 			}
 			throw e;
 		}
+	}
+
+	private static class FileInfo implements Comparable<FileInfo> {
+
+		private File originalFile;
+		private File tempFile;
+		private Date date;
+		private String extension;
+
+		public FileInfo(File file) throws IOException {
+			this.originalFile = file;
+
+			// extract extension
+			String name = file.getName();
+			int idx = name.lastIndexOf('.');
+			if (idx >= 0) {
+				extension = name.substring(idx + 1);
+			}
+
+			// read EXIF
+			try {
+				ExifIFD0Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
+				date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+			} catch (ImageProcessingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			// rename to temp
+			tempFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
+			file.renameTo(tempFile);
+		}
+
+		public Date getDate() {
+			return date;
+		}
+
+		public String getExtension() {
+			return extension;
+		}
+		
+		public void renameTo(int n){
+			String ext = getExtension();
+			File newFile = new File(originalFile.getParent(), (String.format("%04d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
+			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "'");
+			tempFile.renameTo(newFile);
+			tempFile = null;
+		}
+		
+		public void revertRenaming(){
+			if(tempFile != null){
+				tempFile.renameTo(originalFile);
+			}
+		}
+
+		@Override
+		public int compareTo(FileInfo fileInfo) {
+			Date d1 = getDate();
+			Date d2 = fileInfo.getDate();
+			if (d1 == d2) {
+				return originalFile.getName().compareTo(fileInfo.originalFile.getName());
+			}
+			if (d1 == null) {
+				return -1;
+			}
+			if (d2 == null) {
+				return 1;
+			}
+			return d1.compareTo(d2);
+		}
+
 	}
 }
