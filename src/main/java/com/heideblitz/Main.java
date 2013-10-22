@@ -76,9 +76,9 @@ public class Main {
 					date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
 				}
 			} catch (ImageProcessingException e) {
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 
 			if (date == null) {
