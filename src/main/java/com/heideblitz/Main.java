@@ -27,6 +27,9 @@ public class Main {
 			}
 
 			Collections.sort(files);
+			if (args.length > 1 && args[1].trim().length() > 0) {
+				Collections.reverse(files);
+			}
 
 			int n = 0;
 			for (FileInfo file : files) {
@@ -67,8 +70,8 @@ public class Main {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-			if(date == null){
+
+			if (date == null) {
 				System.err.println("date is null: " + originalFile.getName());
 			}
 
@@ -84,17 +87,17 @@ public class Main {
 		public String getExtension() {
 			return extension;
 		}
-		
-		public void renameTo(int n){
+
+		public void renameTo(int n) {
 			String ext = getExtension();
 			File newFile = new File(originalFile.getParent(), (String.format("%04d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
 			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "'");
 			tempFile.renameTo(newFile);
 			tempFile = null;
 		}
-		
-		public void revertRenaming(){
-			if(tempFile != null){
+
+		public void revertRenaming() {
+			if (tempFile != null) {
 				tempFile.renameTo(originalFile);
 			}
 		}
