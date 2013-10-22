@@ -22,53 +22,58 @@ public class Main {
 		final Map<File, File> tempFileMap = new HashMap<File, File>();
 
 		List<File> files = new ArrayList<File>();
-		try{
-		for (File file : new File(args[0]).listFiles()) {
-			if (file.getName().startsWith(".")) {
-				continue;
+		try {
+			for (File file : new File(args[0]).listFiles()) {
+				if (file.getName().startsWith(".")) {
+					continue;
+				}
+				File newFile = File.createTempFile(file.getName() + "__", "",
+						file.getParentFile());
+				files.add(newFile);
+				file.renameTo(newFile);
+				tempFileMap.put(newFile, file);
+
+				String name = file.getName();
+				int idx = name.lastIndexOf('.');
+				if (idx >= 0) {
+					extMap.put(newFile, name.substring(idx + 1));
+				}
 			}
-			File newFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
-			files.add(newFile);
-			file.renameTo(newFile);
-			tempFileMap.put(newFile, file);
 
-			String name = file.getName();
-			int idx = name.lastIndexOf('.');
-			if (idx >= 0) {
-				extMap.put(newFile, name.substring(idx + 1));
+			final SortedMap<File, Date> dateMap = new TreeMap<File, Date>();
+			for (File file : files) {
+				ExifIFD0Directory directory = ImageMetadataReader.readMetadata(
+						file).getDirectory(ExifIFD0Directory.class);
+				Date date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+				System.out.println(file + ": " + date);
+				dateMap.put(file, date);
 			}
-		}
 
-		final SortedMap<File, Date> dateMap = new TreeMap<File, Date>();
-		for (File file : files) {
-			ExifIFD0Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
-			Date date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
-			System.out.println(file + ": " + date);
-			dateMap.put(file, date);
-		}
+			Collections.sort(files, new Comparator<File>() {
+				@Override
+				public int compare(File o1, File o2) {
+					return dateMap.get(o1).compareTo(dateMap.get(o2));
+				}
+			});
 
-		Collections.sort(files, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				return dateMap.get(o1).compareTo(dateMap.get(o2));
+			int n = 0;
+			for (File file : files) {
+				n++;
+				String ext = extMap.get(file);
+				File newFile = new File(file.getParent(),
+						(String.format("%04d", n) + (ext == null ? "" : "."
+								+ ext)).toLowerCase());
+				System.out.println("'" + file.getName() + "' -> '"
+						+ newFile.getName() + "'");
+				file.renameTo(newFile);
+				tempFileMap.remove(file);
 			}
-		});
 
-		int n = 0;
-		for (File file : files) {
-			n++;
-			String ext = extMap.get(file);
-			File newFile = new File(file.getParent(), (String.format("%04d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
-			System.out.println("'" + file.getName() + "' -> '" + newFile.getName() + "'");
-			file.renameTo(newFile);
-			tempFileMap.remove(file);
-		}
-
-		}catch(Throwable e){
-		    for(Map.Entry<File,File> entry : tempFileMap.entrySet()){
-			entry.getKey().renameTo(entry.getValue());
-		    }
-		    throw e;
+		} catch (Throwable e) {
+			for (Map.Entry<File, File> entry : tempFileMap.entrySet()) {
+				entry.getKey().renameTo(entry.getValue());
+			}
+			throw e;
 		}
 	}
 }
