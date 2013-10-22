@@ -136,7 +136,7 @@ public class Main {
 			Date d1 = getDate();
 			Date d2 = fileInfo.getDate();
 			if (d1 == d2) {
-				return originalFile.getName().compareTo(fileInfo.originalFile.getName());
+				return originalFile.getName().compareTo(fileInfo.originalFile.getName()) * (orderDescending ? -1 : 1);
 			}
 			if (d1 == null) {
 				return (orderDescending ? -1 : 1);
