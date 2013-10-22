@@ -16,7 +16,12 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.exif.ExifIFD0Directory;
 
 public class Main {
+	
+	private static boolean reverseOrdered = false;
+	
 	public static void main(String[] args) throws Throwable {
+		reverseOrdered = args.length > 1 && args[1].trim().length() > 0;
+		
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
 			for (File file : new File(args[0]).listFiles()) {
@@ -27,9 +32,6 @@ public class Main {
 			}
 
 			Collections.sort(files);
-			if (args.length > 1 && args[1].trim().length() > 0) {
-				Collections.reverse(files);
-			}
 
 			int n = 0;
 			for (FileInfo file : files) {
@@ -117,7 +119,7 @@ public class Main {
 			if (d2 == null) {
 				return 1;
 			}
-			return d1.compareTo(d2);
+			return d1.compareTo(d2) * (reverseOrdered ? -1 : 1);
 		}
 
 	}
