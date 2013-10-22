@@ -64,7 +64,9 @@ public class Main {
 			// read EXIF
 			try {
 				ExifIFD0Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
-				date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+				if(directory != null){
+					date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+				}
 			} catch (ImageProcessingException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
