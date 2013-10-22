@@ -31,7 +31,13 @@ public class Main {
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
 			for (File file : directory.listFiles()) {
-				if (!file.isFile() || file.getName().startsWith(".")) {
+				if (file.getName().startsWith(".")) {
+					continue;
+				}
+				if (!file.isFile()) {
+					if(file.isDirectory()){
+						renameFilesInDirectory(file);
+					}
 					continue;
 				}
 				files.add(new FileInfo(file));
