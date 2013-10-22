@@ -95,7 +95,7 @@ public class Main {
 		public void renameTo(int n) {
 			String ext = getExtension();
 			File newFile = new File(originalFile.getParent(), (String.format("%04d", n) + (ext == null ? "" : "." + ext)).toLowerCase());
-			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "'");
+			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "' (" + getDate() + ")");
 			tempFile.renameTo(newFile);
 			tempFile = null;
 		}
