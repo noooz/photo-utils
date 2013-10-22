@@ -11,7 +11,9 @@ import java.util.List;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
 import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
 	
@@ -70,9 +72,13 @@ public class Main {
 
 			// read EXIF
 			try {
-				ExifIFD0Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
+//				Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
+//				if(directory != null){
+//					date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+//				}
+				Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
 				if(directory != null){
-					date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+					date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 				}
 			} catch (ImageProcessingException e) {
 				System.err.println(e.getMessage());
