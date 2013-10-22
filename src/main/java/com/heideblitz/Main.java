@@ -21,13 +21,13 @@ public class Main {
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 	private static boolean orderDescending = false;
 	
-	public static void main(String[] args) throws Throwable {
+	public static void main(String[] args)  throws Throwable {
 		orderDescending = args.length > 1 && args[1].trim().length() > 0;
 		
 		renameFilesInDirectory(new File(args[0]));
 	}
 	
-	private static void renameFilesInDirectory(File directory){
+	private static void renameFilesInDirectory(File directory) throws Throwable{
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
 			for (File file : directory.listFiles()) {
