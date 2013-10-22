@@ -20,7 +20,7 @@ public class Main {
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
 			for (File file : new File(args[0]).listFiles()) {
-				if (file.getName().startsWith(".")) {
+				if (!file.isFile() || file.getName().startsWith(".")) {
 					continue;
 				}
 				files.add(new FileInfo(file));
