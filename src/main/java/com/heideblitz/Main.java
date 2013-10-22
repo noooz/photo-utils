@@ -19,10 +19,10 @@ public class Main {
 	
 	private final static int DIGITS = 4;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-	private static boolean reverseOrdered = false;
+	private static boolean orderDescending = false;
 	
 	public static void main(String[] args) throws Throwable {
-		reverseOrdered = args.length > 1 && args[1].trim().length() > 0;
+		orderDescending = args.length > 1 && args[1].trim().length() > 0;
 		
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
@@ -38,7 +38,7 @@ public class Main {
 			int n = 0;
 			for (FileInfo file : files) {
 				n++;
-				if(reverseOrdered){
+				if(orderDescending){
 					file.renameTo((int)Math.pow(10, DIGITS) - n);
 				}else{
 					file.renameTo(n);
@@ -134,7 +134,7 @@ public class Main {
 			if (d2 == null) {
 				return 1;
 			}
-			return d1.compareTo(d2) * (reverseOrdered ? -1 : 1);
+			return d1.compareTo(d2) * (orderDescending ? -1 : 1);
 		}
 
 	}
