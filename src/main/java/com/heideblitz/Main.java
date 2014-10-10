@@ -144,10 +144,14 @@ public class Main {
 				}
 				name.append(DATE_FORMAT.format(d));
 			}
-			if (ext != null) {
-				name.append(ext.toLowerCase());
-			}
-			File newFile = new File(originalFile.getParent(), name.toString());
+			File newFile;
+			int copy = 0;
+			do {
+				newFile = new File(originalFile.getParent(), name.toString()
+						+ (copy == 0 ? "" : " (" + copy + ")")
+						+ (ext == null ? "" : "." + ext.toLowerCase()));
+				copy++;
+			} while (newFile.exists());
 			System.out.println("'" + originalFile.getName() + "' -> '"
 					+ newFile.getName() + "' (" + getDate() + ")");
 			tempFile.renameTo(newFile);
