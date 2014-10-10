@@ -16,18 +16,22 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
-	
+
 	private final static int DIGITS = 4;
-	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-	private static boolean orderDescending = false;
-	
-	public static void main(String[] args)  throws Throwable {
-		orderDescending = args.length > 1 && args[1].trim().length() > 0;
-		
+	private final static DateFormat DATE_FORMAT = new SimpleDateFormat(
+			"yyyy-MM-dd_HH:mm:ss");
+	private static Order order = null;
+
+	public static void main(String[] args) throws Throwable {
+		System.out.println("usage: run.sh [DIRECTORY] [asc|desc]");
+		if (args.length > 1) {
+			order = Order.valueOf(args[1]);
+		}
+
 		renameFilesInDirectory(new File(args[0]));
 	}
-	
-	private static void renameFilesInDirectory(File directory) throws Throwable{
+
+	private static void renameFilesInDirectory(File directory) throws Throwable {
 		List<FileInfo> files = new ArrayList<FileInfo>();
 		try {
 			for (File file : directory.listFiles()) {
@@ -35,7 +39,7 @@ public class Main {
 					continue;
 				}
 				if (!file.isFile()) {
-					if(file.isDirectory()){
+					if (file.isDirectory()) {
 						renameFilesInDirectory(file);
 					}
 					continue;
@@ -48,12 +52,18 @@ public class Main {
 			int n = 0;
 			for (FileInfo file : files) {
 				n++;
-				if(orderDescending){
-					file.renameTo((int)Math.pow(10, DIGITS) - n);
-				}else{
-					file.renameTo(n);
+				if (order == null) {
+					file.renameTo(null);
+				} else {
+					switch (order) {
+					case asc:
+						file.renameTo(n);
+						break;
+					case desc:
+						file.renameTo((int) Math.pow(10, DIGITS) - n);
+						break;
+					}
 				}
-				
 			}
 		} catch (Throwable e) {
 			for (FileInfo file : files) {
@@ -61,6 +71,10 @@ public class Main {
 			}
 			throw e;
 		}
+	}
+
+	private static enum Order {
+		asc, desc
 	}
 
 	private static class FileInfo implements Comparable<FileInfo> {
@@ -82,13 +96,16 @@ public class Main {
 
 			// read EXIF
 			try {
-//				Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
-//				if(directory != null){
-//					date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
-//				}
-				Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
-				if(directory != null){
-					date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+				// Directory directory =
+				// ImageMetadataReader.readMetadata(file).getDirectory(ExifIFD0Directory.class);
+				// if(directory != null){
+				// date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
+				// }
+				Directory directory = ImageMetadataReader.readMetadata(file)
+						.getDirectory(ExifSubIFDDirectory.class);
+				if (directory != null) {
+					date = directory
+							.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 				}
 			} catch (ImageProcessingException e) {
 				System.err.println(e.getMessage());
@@ -101,7 +118,8 @@ public class Main {
 			}
 
 			// rename to temp
-			tempFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
+			tempFile = File.createTempFile(file.getName() + "__", "",
+					file.getParentFile());
 			file.renameTo(tempFile);
 		}
 
@@ -113,14 +131,25 @@ public class Main {
 			return extension;
 		}
 
-		public void renameTo(int n) {
+		public void renameTo(Integer n) {
 			String ext = getExtension();
 			Date d = getDate();
-			File newFile = new File(originalFile.getParent(), //
-					(String.format("%0" + DIGITS + "d", n) + //
-					(d == null ? "" : "_" + DATE_FORMAT.format(d)) + //		
-					(ext == null ? "" : "." + ext)).toLowerCase());
-			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "' (" + getDate() + ")");
+			StringBuilder name = new StringBuilder();
+			if (n != null) {
+				name.append(String.format("%0" + DIGITS + "d", n));
+			}
+			if (d != null) {
+				if (name.length() > 0) {
+					name.append("_");
+				}
+				name.append(DATE_FORMAT.format(d));
+			}
+			if (ext != null) {
+				name.append(ext.toLowerCase());
+			}
+			File newFile = new File(originalFile.getParent(), name.toString());
+			System.out.println("'" + originalFile.getName() + "' -> '"
+					+ newFile.getName() + "' (" + getDate() + ")");
 			tempFile.renameTo(newFile);
 			tempFile = null;
 		}
@@ -133,16 +162,19 @@ public class Main {
 
 		@Override
 		public int compareTo(FileInfo fileInfo) {
+			boolean descending = Order.desc.equals(order);
 			Date d1 = getDate();
 			Date d2 = fileInfo.getDate();
 			if (d1 == d2) {
-				return originalFile.getName().compareTo(fileInfo.originalFile.getName()) * (orderDescending ? -1 : 1);
+				return originalFile.getName().compareTo(
+						fileInfo.originalFile.getName())
+						* (descending ? -1 : 1);
 			}
 			if (d1 == null) {
-				return (orderDescending ? -1 : 1);
+				return (descending ? -1 : 1);
 			}
 			if (d2 == null) {
-				return (orderDescending ? 1 : -1);
+				return (descending ? 1 : -1);
 			}
 			return d1.compareTo(d2);
 		}
