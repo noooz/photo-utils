@@ -134,6 +134,12 @@ public class Main {
 		}
 
 		public void renameTo(Integer n) {
+		    if(d == null && n == null){
+			if(!tempFile.renameTo(originalFile)){
+			    throw new RuntimeException("can't rename \"" + tempFile.getPath() + "\" to \"" + originalFile.getPath() + "\"");
+			}
+			return;
+		    }
 			String ext = getExtension();
 			Date d = getDate();
 			StringBuilder name = new StringBuilder();
