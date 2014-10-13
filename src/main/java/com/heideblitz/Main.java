@@ -19,7 +19,8 @@ public class Main {
 
 	private final static int DIGITS = 4;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat(
-			"yyyy-MM-dd_HH:mm:ss");
+									   "yyyy-MM-dd_HH:mm:ss");
+									   // "yyyy-MM-dd_HH~mm~ss");
 	private static Order order = null;
 
 	public static void main(String[] args) throws Throwable {
@@ -60,7 +61,7 @@ public class Main {
 						file.renameTo(n);
 						break;
 					case desc:
-						file.renameTo((int) Math.pow(10, DIGITS) - n);
+					    file.renameTo((int) Math.pow(10, DIGITS) - n);
 						break;
 					}
 				}
@@ -118,9 +119,10 @@ public class Main {
 			}
 
 			// rename to temp
-			tempFile = File.createTempFile(file.getName() + "__", "",
-					file.getParentFile());
-			file.renameTo(tempFile);
+			tempFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
+			if(!file.renameTo(tempFile)){
+			    throw new RuntimeException("can't rename \"" + file.getName() + "\" to \"" + tempFile.getPath() + "\"");
+			}
 		}
 
 		public Date getDate() {
@@ -154,7 +156,9 @@ public class Main {
 			} while (newFile.exists());
 			System.out.println("'" + originalFile.getName() + "' -> '"
 					+ newFile.getName() + "' (" + getDate() + ")");
-			tempFile.renameTo(newFile);
+			if(!tempFile.renameTo(newFile)){
+			    throw new RuntimeException("can't rename \"" + tempFile.getPath() + "\" to \"" + newFile.getPath() + "\"");			    
+			}
 			tempFile = null;
 		}
 
