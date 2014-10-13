@@ -134,6 +134,8 @@ public class Main {
 		}
 
 		public void renameTo(Integer n) {
+		    Date d = getDate();
+
 		    if(d == null && n == null){
 			if(!tempFile.renameTo(originalFile)){
 			    throw new RuntimeException("can't rename \"" + tempFile.getPath() + "\" to \"" + originalFile.getPath() + "\"");
@@ -141,7 +143,6 @@ public class Main {
 			return;
 		    }
 			String ext = getExtension();
-			Date d = getDate();
 			StringBuilder name = new StringBuilder();
 			if (n != null) {
 				name.append(String.format("%0" + DIGITS + "d", n));
