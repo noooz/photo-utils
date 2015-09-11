@@ -20,7 +20,8 @@ public class Main {
 	private final static int DIGITS = 4;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat(
 									   //"yyyy-MM-dd_HH:mm:ss");
-									   "yyyy-MM-dd_HHmmss");
+									   //"yyyy-MM-dd_HHmmss");
+									   "yyyyMMdd_HHmmss");
 	private static Order order = null;
 
 	public static void main(String[] args) throws Throwable {
