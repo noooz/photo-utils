@@ -71,6 +71,7 @@ public class Main {
 			for (FileInfo file : files) {
 				file.revertRenaming();
 			}
+			System.out.println("error while processing directory: " + directory);
 			throw e;
 		}
 	}
@@ -121,6 +122,7 @@ public class Main {
 
 			// rename to temp
 			tempFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
+			tempFile.delete();
 			if(!file.renameTo(tempFile)){
 			    throw new RuntimeException("can't rename \"" + file.getName() + "\" to \"" + tempFile.getPath() + "\"");
 			}
