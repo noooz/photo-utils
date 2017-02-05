@@ -19,9 +19,9 @@ public class PhotoRename {
 
 	private final static int DIGITS = 4;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat(
-									   //"yyyy-MM-dd_HH:mm:ss");
-									   //"yyyy-MM-dd_HHmmss");
-									   "yyyyMMdd_HHmmss");
+			// "yyyy-MM-dd_HH:mm:ss");
+			// "yyyy-MM-dd_HHmmss");
+			"yyyyMMdd_HHmmss");
 	private static Order order = null;
 
 	public static void main(String[] args) throws Throwable {
@@ -62,7 +62,7 @@ public class PhotoRename {
 						file.renameTo(n);
 						break;
 					case desc:
-					    file.renameTo((int) Math.pow(10, DIGITS) - n);
+						file.renameTo((int) Math.pow(10, DIGITS) - n);
 						break;
 					}
 				}
@@ -104,11 +104,9 @@ public class PhotoRename {
 				// if(directory != null){
 				// date = directory.getDate(ExifIFD0Directory.TAG_DATETIME);
 				// }
-				Directory directory = ImageMetadataReader.readMetadata(file)
-						.getDirectory(ExifSubIFDDirectory.class);
+				Directory directory = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
 				if (directory != null) {
-					date = directory
-							.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+					date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 				}
 			} catch (ImageProcessingException e) {
 				System.err.println(e.getMessage());
@@ -123,8 +121,8 @@ public class PhotoRename {
 			// rename to temp
 			tempFile = File.createTempFile(file.getName() + "__", "", file.getParentFile());
 			tempFile.delete();
-			if(!file.renameTo(tempFile)){
-			    throw new RuntimeException("can't rename \"" + file.getName() + "\" to \"" + tempFile.getPath() + "\"");
+			if (!file.renameTo(tempFile)) {
+				throw new RuntimeException("can't rename \"" + file.getName() + "\" to \"" + tempFile.getPath() + "\"");
 			}
 		}
 
@@ -137,14 +135,15 @@ public class PhotoRename {
 		}
 
 		public void renameTo(Integer n) {
-		    Date d = getDate();
+			Date d = getDate();
 
-		    if(d == null && n == null){
-			if(!tempFile.renameTo(originalFile)){
-			    throw new RuntimeException("can't rename \"" + tempFile.getPath() + "\" to \"" + originalFile.getPath() + "\"");
+			if (d == null && n == null) {
+				if (!tempFile.renameTo(originalFile)) {
+					throw new RuntimeException(
+							"can't rename \"" + tempFile.getPath() + "\" to \"" + originalFile.getPath() + "\"");
+				}
+				return;
 			}
-			return;
-		    }
 			String ext = getExtension();
 			StringBuilder name = new StringBuilder();
 			if (n != null) {
@@ -159,15 +158,14 @@ public class PhotoRename {
 			File newFile;
 			int copy = 0;
 			do {
-				newFile = new File(originalFile.getParent(), name.toString()
-						+ (copy == 0 ? "" : " (" + copy + ")")
+				newFile = new File(originalFile.getParent(), name.toString() + (copy == 0 ? "" : " (" + copy + ")")
 						+ (ext == null ? "" : "." + ext.toLowerCase()));
 				copy++;
 			} while (newFile.exists());
-			System.out.println("'" + originalFile.getName() + "' -> '"
-					+ newFile.getName() + "' (" + getDate() + ")");
-			if(!tempFile.renameTo(newFile)){
-			    throw new RuntimeException("can't rename \"" + tempFile.getPath() + "\" to \"" + newFile.getPath() + "\"");			    
+			System.out.println("'" + originalFile.getName() + "' -> '" + newFile.getName() + "' (" + getDate() + ")");
+			if (!tempFile.renameTo(newFile)) {
+				throw new RuntimeException(
+						"can't rename \"" + tempFile.getPath() + "\" to \"" + newFile.getPath() + "\"");
 			}
 			tempFile = null;
 		}
@@ -184,9 +182,7 @@ public class PhotoRename {
 			Date d1 = getDate();
 			Date d2 = fileInfo.getDate();
 			if (d1 == d2) {
-				return originalFile.getName().compareTo(
-						fileInfo.originalFile.getName())
-						* (descending ? -1 : 1);
+				return originalFile.getName().compareTo(fileInfo.originalFile.getName()) * (descending ? -1 : 1);
 			}
 			if (d1 == null) {
 				return (descending ? -1 : 1);
