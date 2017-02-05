@@ -1,4 +1,4 @@
-package com.zimmerbell;
+package com.zimmerbell.photo.rename;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
-public class PhotoRename {
+public class Main {
 
 	private final static int DIGITS = 4;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat(

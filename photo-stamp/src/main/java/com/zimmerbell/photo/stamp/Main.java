@@ -1,4 +1,4 @@
-package com.zimmerbell;
+package com.zimmerbell.photo.stamp;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
-public class PhotoStamp {
+public class Main {
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh [DIRECTORY]");
 		
