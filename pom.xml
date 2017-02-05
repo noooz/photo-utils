@@ -4,8 +4,8 @@
 
 	<groupId>com.zimmerbell</groupId>
 	<artifactId>photo-utils</artifactId>
-	<packaging>jar</packaging>
 	<version>0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
 	<dependencies>
 		<dependency>
@@ -24,24 +24,8 @@
 					<version>3.0</version>
 					<configuration>
 						<optimize>true</optimize>
-						<source>1.6</source>
-						<target>1.6</target>
-					</configuration>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<version>1.2.1</version>
-					<executions>
-						<execution>
-							<goals>
-								<goal>java</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>					
-						<mainClass>com.zimmerbell.PhotoRename</mainClass>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 
@@ -49,6 +33,9 @@
 		</pluginManagement>
 	</build>
 
-
+	<modules>
+		<module>photo-rename</module>
+		<module>photo-stamp</module>
+	</modules>
 
 </project>
