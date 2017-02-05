@@ -28,7 +28,7 @@
 						</execution>
 					</executions>
 					<configuration>					
-						<mainClass>com.zimmerbell.PhotoRename</mainClass>
+						<mainClass>com.zimmerbell.photo.rename.Main</mainClass>
 					</configuration>
 				</plugin>
 
