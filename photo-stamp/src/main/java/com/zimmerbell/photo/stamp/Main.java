@@ -1,10 +1,18 @@
 package com.zimmerbell.photo.stamp;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 
+import javax.imageio.IIOException;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 
 import com.drew.imaging.ImageMetadataReader;
@@ -63,7 +71,37 @@ public class Main {
 
 	private void stampPhoto(File file, Date date) throws IOException {
 		log(file + ": " + date);
-		
-		ImageInputStream inputStream = ImageIO.createImageInputStream(file);
+
+		ImageInputStream imageInputStream = ImageIO.createImageInputStream(file);
+		Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
+		if (!imageReaders.hasNext()) {
+			log("no image reader found: " + file);
+			return;
+		}
+
+		ImageReader imageReader = imageReaders.next();
+		imageReader.setInput(imageInputStream, true);
+
+		try {
+			IIOImage image = imageReader.readAll(0, null);
+
+			RenderedImage renderedImage = image.getRenderedImage();
+
+			ImageWriter writer = ImageIO.getImageWriter(imageReader);
+
+			ImageWriteParam param = writer.getDefaultWriteParam();
+			param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
+			writer.setOutput(
+					ImageIO.createImageOutputStream(new File(file.getParentFile(), file.getName() + "-copy.jpg")));
+
+			writer.write(null, image, param);
+		} catch (IIOException e) {
+			log(e.getMessage());
+
+			BufferedImage image = ImageIO.read(file);
+
+			ImageIO.write(image, "jpg", new File(file.getParentFile(), file.getName() + "-copy.jpg"));
+		}
+
 	}
 }
