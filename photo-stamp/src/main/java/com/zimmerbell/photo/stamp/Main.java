@@ -1,7 +1,11 @@
 package com.zimmerbell.photo.stamp;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -12,14 +16,18 @@ public class Main {
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh [DIRECTORY]");
 
-		stampFilesInDirectory(new File(args[0]));
+		new Main(new File(args[0]));
 	}
 
-	private static void log(String msg) {
+	private Main(File directory) throws Throwable {
+		stampFilesInDirectory(directory);
+	}
+
+	private void log(String msg) {
 		System.out.println(msg);
 	}
 
-	private static void stampFilesInDirectory(File directory) throws Throwable {
+	private void stampFilesInDirectory(File directory) throws Throwable {
 		try {
 			for (File file : directory.listFiles()) {
 				if (file.getName().startsWith(".")) {
@@ -39,7 +47,7 @@ public class Main {
 						continue;
 					}
 					Date date = exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-					log(file + ": " + date);
+					stampPhoto(file, date);
 				} catch (ImageProcessingException e) {
 					log(file + ": " + e.getMessage());
 				} catch (Throwable e) {
@@ -51,5 +59,11 @@ public class Main {
 			log("error while processing directory: " + directory);
 			throw e;
 		}
+	}
+
+	private void stampPhoto(File file, Date date) throws IOException {
+		log(file + ": " + date);
+		
+		ImageInputStream inputStream = ImageIO.createImageInputStream(file);
 	}
 }
