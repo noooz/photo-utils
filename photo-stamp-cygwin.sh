@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-wd=`pwd`/photo-rename
+wd=`pwd`/photo-stamp
 
 cd "$1"
 dir=`pwd`
