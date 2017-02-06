@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 wd=`pwd`/photo-stamp
 
 cd "$1"
