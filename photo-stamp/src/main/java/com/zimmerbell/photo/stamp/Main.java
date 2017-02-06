@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.function.Function;
 
 import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
@@ -22,11 +23,12 @@ import javax.imageio.stream.ImageInputStream;
 import org.apache.commons.io.FileUtils;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.exif.ExifSubIFDDescriptor;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
-	public final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	private final static Function<Integer, Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
+	private final static Function<Integer, Integer> MARGIN = (Integer imageHeight) -> 10;
 
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh SOURCE_DIRECTORY [TARGET_DIRECTORY]");
@@ -126,9 +128,10 @@ public class Main {
 			dateString = idx < 0 ? fileName : fileName.substring(0, idx);
 		}
 
-		int margin = 10;
+		int margin = MARGIN.apply(image.getHeight());
+		int fontSize = FONT_SIZE.apply(image.getHeight());
 
-		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 30);
+		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, fontSize);
 		Graphics2D graphics = (Graphics2D) image.getGraphics();
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
