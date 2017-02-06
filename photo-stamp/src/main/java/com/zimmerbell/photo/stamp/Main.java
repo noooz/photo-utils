@@ -2,7 +2,6 @@ package com.zimmerbell.photo.stamp;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -26,8 +25,7 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
-
-	public final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	public final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh SOURCE_DIRECTORY [TARGET_DIRECTORY]");
@@ -122,26 +120,25 @@ public class Main {
 	private void stampPhoto(BufferedImage image, Date date, String fileName) throws IOException {
 		String dateString = "";
 		if (date != null) {
-			dateString = dateFormat.format(date);
+			dateString = DATE_FORMAT.format(date);
 		} else {
 			int idx = fileName.lastIndexOf('.');
 			dateString = idx < 0 ? fileName : fileName.substring(0, idx);
 		}
 
-		
-
 		int margin = 10;
-		int x = margin;
-		int y = image.getHeight() - margin;
+				
 		
 		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 30);
-
 		Graphics2D graphics = (Graphics2D) image.getGraphics();
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		
 		graphics.setColor(Color.WHITE);
 		graphics.setFont(font);
+		
+		int x = image.getWidth() - margin - graphics.getFontMetrics(font).stringWidth(dateString);
+		int y = image.getHeight() - margin;
+		
 		graphics.drawString(dateString, x, y);
 	}
 }
