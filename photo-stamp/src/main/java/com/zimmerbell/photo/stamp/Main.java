@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
@@ -27,8 +27,8 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
 	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-	private final static Function<Integer, Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
-	private final static Function<Integer, Integer> MARGIN = (Integer imageHeight) -> 10;
+	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
+	private final static UnaryOperator<Integer> MARGIN = (Integer imageHeight) -> 10;
 
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh SOURCE_DIRECTORY [TARGET_DIRECTORY]");
