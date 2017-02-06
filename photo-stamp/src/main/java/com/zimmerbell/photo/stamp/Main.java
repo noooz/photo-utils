@@ -1,5 +1,6 @@
 package com.zimmerbell.photo.stamp;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -111,6 +112,6 @@ public class Main {
 	}
 
 	private void stampPhoto(BufferedImage image, Date date) throws IOException {
-
+		Graphics2D graphics = (Graphics2D)image.getGraphics();
 	}
 }
