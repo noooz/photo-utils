@@ -19,6 +19,9 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
@@ -62,17 +65,17 @@ public class Main {
 					continue;
 				}
 
+				File outFile = new File(outDirectory, file.getName());
+
 				try {
 
 					Directory exif = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
 					Date date = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 
-					stampPhoto(file, new File(outDirectory, file.getName()), date);
-				} catch (ImageProcessingException e) {
+					stampPhoto(file, outFile, date);
+				} catch (Exception e) {
 					log(file + ": " + e.getMessage());
-				} catch (Throwable e) {
-					log("error while processing file: " + file);
-					throw e;
+					FileUtils.copyFile(file, outFile);
 				}
 			}
 		} catch (Throwable e) {
@@ -127,18 +130,17 @@ public class Main {
 		}
 
 		int margin = 10;
-				
-		
+
 		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 30);
 		Graphics2D graphics = (Graphics2D) image.getGraphics();
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
+
 		graphics.setColor(Color.WHITE);
 		graphics.setFont(font);
-		
+
 		int x = image.getWidth() - margin - graphics.getFontMetrics(font).stringWidth(dateString);
 		int y = image.getHeight() - margin;
-		
+
 		graphics.drawString(dateString, x, y);
 	}
 }
