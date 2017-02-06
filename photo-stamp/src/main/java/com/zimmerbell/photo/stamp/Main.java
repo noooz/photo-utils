@@ -29,6 +29,7 @@ public class Main {
 	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
 	private final static UnaryOperator<Integer> MARGIN = (Integer imageHeight) -> 10;
+	private final static boolean OVERWRITE_EXISTING_FILES = false;
 
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh SOURCE_DIRECTORY [TARGET_DIRECTORY]");
@@ -74,7 +75,9 @@ public class Main {
 					stampPhoto(file, outFile, date);
 				} catch (Exception e) {
 					log(file + ": " + e.getMessage());
-					FileUtils.copyFile(file, outFile);
+					if(OVERWRITE_EXISTING_FILES || !outFile.exists()){
+						FileUtils.copyFile(file, outFile);
+					}
 				}
 			}
 		} catch (Throwable e) {
@@ -84,6 +87,9 @@ public class Main {
 	}
 
 	private void stampPhoto(final File file, final File outFile, final Date date) throws IOException {
+		if(outFile.exists() && !OVERWRITE_EXISTING_FILES){
+			return;
+		}
 		log(date + ": " + file + " -> " + outFile);
 
 		ImageInputStream imageInputStream = ImageIO.createImageInputStream(file);
@@ -104,7 +110,6 @@ public class Main {
 				ImageWriteParam param = writer.getDefaultWriteParam();
 				param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
 				writer.setOutput(ImageIO.createImageOutputStream(outFile));
-
 				writer.write(null, iioImage, param);
 				return;
 			} catch (IIOException e) {
