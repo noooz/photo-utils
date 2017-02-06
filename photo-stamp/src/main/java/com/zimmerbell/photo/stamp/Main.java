@@ -1,7 +1,6 @@
 package com.zimmerbell.photo.stamp;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -22,40 +21,46 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
 	public static void main(String[] args) throws Throwable {
-		System.out.println("usage: run.sh [DIRECTORY]");
+		System.out.println("usage: run.sh SOURCE_DIRECTORY [TARGET_DIRECTORY]");
+		if(args.length == 0){
+			return;
+		}
 
-		new Main(new File(args[0]));
+		File directory = new File(args[0]);
+		File outDirectory = args.length > 1 ? new File(args[1]) : directory;
+		
+		new Main(directory, outDirectory);
 	}
 
-	private Main(File directory) throws Throwable {
-		stampFilesInDirectory(directory);
+	private Main(File directory, File outDirectory) throws Throwable {
+		stampFilesInDirectory(directory, outDirectory);
 	}
 
 	private void log(String msg) {
 		System.out.println(msg);
 	}
 
-	private void stampFilesInDirectory(File directory) throws Throwable {
+	private void stampFilesInDirectory(File directory, File outDirectory) throws Throwable {
 		try {
+			outDirectory.mkdirs();
+
 			for (File file : directory.listFiles()) {
 				if (file.getName().startsWith(".")) {
 					continue;
 				}
 				if (!file.isFile()) {
 					if (file.isDirectory()) {
-						stampFilesInDirectory(file);
+						stampFilesInDirectory(file, new File(outDirectory, file.getName()));
 					}
 					continue;
 				}
 
 				try {
+
 					Directory exif = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
-					if (exif == null) {
-						log("can't read exif: " + file);
-						continue;
-					}
-					Date date = exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-					stampPhoto(file, date);
+					Date date = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+
+					stampPhoto(file, new File(outDirectory, file.getName()), date);
 				} catch (ImageProcessingException e) {
 					log(file + ": " + e.getMessage());
 				} catch (Throwable e) {
@@ -69,39 +74,43 @@ public class Main {
 		}
 	}
 
-	private void stampPhoto(File file, Date date) throws IOException {
-		log(file + ": " + date);
+	private void stampPhoto(final File file, final File outFile, final Date date) throws IOException {
+		log(date + ": " + file + " -> " + outFile);
 
 		ImageInputStream imageInputStream = ImageIO.createImageInputStream(file);
 		Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
 		if (!imageReaders.hasNext()) {
 			log("no image reader found: " + file);
-			return;
+		} else {
+			ImageReader imageReader = imageReaders.next();
+			imageReader.setInput(imageInputStream, true);
+
+			try {
+				IIOImage iioImage = imageReader.readAll(0, null);
+
+				BufferedImage image = (BufferedImage) iioImage.getRenderedImage();
+				stampPhoto(image, date);
+
+				ImageWriter writer = ImageIO.getImageWriter(imageReader);
+				ImageWriteParam param = writer.getDefaultWriteParam();
+				param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
+				writer.setOutput(ImageIO.createImageOutputStream(outFile));
+
+				writer.write(null, iioImage, param);
+				return;
+			} catch (IIOException e) {
+				log(e.getMessage());
+			}
 		}
 
-		ImageReader imageReader = imageReaders.next();
-		imageReader.setInput(imageInputStream, true);
+		// fallback for reading/reading image
+		BufferedImage image = ImageIO.read(file);
+		stampPhoto(image, date);
+		ImageIO.write(image, "jpg", outFile);
 
-		try {
-			IIOImage image = imageReader.readAll(0, null);
+	}
 
-			RenderedImage renderedImage = image.getRenderedImage();
-
-			ImageWriter writer = ImageIO.getImageWriter(imageReader);
-
-			ImageWriteParam param = writer.getDefaultWriteParam();
-			param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
-			writer.setOutput(
-					ImageIO.createImageOutputStream(new File(file.getParentFile(), file.getName() + "-copy.jpg")));
-
-			writer.write(null, image, param);
-		} catch (IIOException e) {
-			log(e.getMessage());
-
-			BufferedImage image = ImageIO.read(file);
-
-			ImageIO.write(image, "jpg", new File(file.getParentFile(), file.getName() + "-copy.jpg"));
-		}
+	private void stampPhoto(BufferedImage image, Date date) throws IOException {
 
 	}
 }
