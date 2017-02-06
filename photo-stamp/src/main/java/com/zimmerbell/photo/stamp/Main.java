@@ -1,9 +1,14 @@
 package com.zimmerbell.photo.stamp;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -21,15 +26,18 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class Main {
+
+	public final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
 	public static void main(String[] args) throws Throwable {
 		System.out.println("usage: run.sh SOURCE_DIRECTORY [TARGET_DIRECTORY]");
-		if(args.length == 0){
+		if (args.length == 0) {
 			return;
 		}
 
 		File directory = new File(args[0]);
 		File outDirectory = args.length > 1 ? new File(args[1]) : directory;
-		
+
 		new Main(directory, outDirectory);
 	}
 
@@ -90,7 +98,7 @@ public class Main {
 				IIOImage iioImage = imageReader.readAll(0, null);
 
 				BufferedImage image = (BufferedImage) iioImage.getRenderedImage();
-				stampPhoto(image, date);
+				stampPhoto(image, date, outFile.getName());
 
 				ImageWriter writer = ImageIO.getImageWriter(imageReader);
 				ImageWriteParam param = writer.getDefaultWriteParam();
@@ -106,12 +114,34 @@ public class Main {
 
 		// fallback for reading/reading image
 		BufferedImage image = ImageIO.read(file);
-		stampPhoto(image, date);
+		stampPhoto(image, date, outFile.getName());
 		ImageIO.write(image, "jpg", outFile);
 
 	}
 
-	private void stampPhoto(BufferedImage image, Date date) throws IOException {
-		Graphics2D graphics = (Graphics2D)image.getGraphics();
+	private void stampPhoto(BufferedImage image, Date date, String fileName) throws IOException {
+		String dateString = "";
+		if (date != null) {
+			dateString = dateFormat.format(date);
+		} else {
+			int idx = fileName.lastIndexOf('.');
+			dateString = idx < 0 ? fileName : fileName.substring(0, idx);
+		}
+
+		
+
+		int margin = 10;
+		int x = margin;
+		int y = image.getHeight() - margin;
+		
+		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 30);
+
+		Graphics2D graphics = (Graphics2D) image.getGraphics();
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		
+		graphics.setColor(Color.WHITE);
+		graphics.setFont(font);
+		graphics.drawString(dateString, x, y);
 	}
 }
