@@ -43,7 +43,7 @@ public class PhotoProcessor {
 	public PhotoProcessor(CommandLine cl) throws Throwable {
 		this.cl = cl;
 
-		File sourceDirectory = new File(cl.getOptionValue(Main.OPT_SOURCE));
+		File sourceDirectory = new File(cl.getOptionValue(Main.OPT_SOURCE, System.getProperty("user.dir")));
 		File destinationDirectory;
 		if (cl.hasOption(Main.OPT_DESTINATION)) {
 			destinationDirectory = new File(cl.getOptionValue(Main.OPT_DESTINATION));
