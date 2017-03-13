@@ -101,9 +101,11 @@ public class PhotoProcessor {
 			}
 			
 			// delete unknown files in destination directory
-			for(File file : destDirectory.listFiles()){
-				if(!fileNames.contains(file.getName())){
-					FileUtils.forceDelete(file);
+			if(cl.hasOption(Main.OPT_DELETE)){
+				for(File file : destDirectory.listFiles()){
+					if(!fileNames.contains(file.getName())){
+						FileUtils.forceDelete(file);
+					}
 				}
 			}
 			
