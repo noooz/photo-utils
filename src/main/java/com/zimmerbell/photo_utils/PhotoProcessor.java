@@ -67,17 +67,19 @@ public class PhotoProcessor {
 		System.out.println(msg);
 	}
 
-	private void processFilesInDirectory(File directory, File outDirectory) throws Throwable {
+	private void processFilesInDirectory(File srcDirectory, File destDirectory) throws Throwable {
 		try {
-			outDirectory.mkdirs();
-
-			for (File file : directory.listFiles()) {
+			destDirectory.mkdirs();
+			
+			final Set<String> fileNames = new HashSet<>();
+			for (File file : srcDirectory.listFiles()) {
 				if (file.getName().startsWith(".")) {
 					continue;
 				}
 				if (!file.isFile()) {
 					if (file.isDirectory()) {
-						processFilesInDirectory(file, new File(outDirectory, file.getName()));
+						fileNames.add(file.getName());
+						processFilesInDirectory(file, new File(destDirectory, file.getName()));
 					}
 					continue;
 				}
@@ -87,17 +89,26 @@ public class PhotoProcessor {
 
 				File outFile;
 				if (cl.hasOption(Main.OPT_RENAME)) {
-					outFile = destinationFile(outDirectory, file.getName(), date);
+					outFile = destinationFile(destDirectory, file.getName(), date);
 				} else {
-					outFile = new File(outDirectory, file.getName());
+					outFile = new File(destDirectory, file.getName());
 				}
 
 				newFiles.add(outFile);
 
+				fileNames.add(outFile.getName());
 				processFile(file, outFile, date);
 			}
+			
+			// delete unknown files in destination directory
+			for(File file : destDirectory.listFiles()){
+				if(!fileNames.contains(file.getName())){
+					FileUtils.forceDelete(file);
+				}
+			}
+			
 		} catch (Throwable e) {
-			log("error while processing directory: " + directory);
+			log("error while processing directory: " + srcDirectory);
 			throw e;
 		}
 	}

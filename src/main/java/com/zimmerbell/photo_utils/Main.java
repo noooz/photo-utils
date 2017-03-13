@@ -16,6 +16,7 @@ public class Main {
 	public final static String OPT_DESTINATION = "dest";
 
 	public final static String OPT_OVERWRITE = "overwrite";
+	public final static String OPT_DELETE = "delete";
 
 	public final static String OPT_RENAME = "rename";
 	public final static String OPT_STAMP = "stamp";
@@ -30,6 +31,7 @@ public class Main {
 		options.addOption(Option.builder("d").longOpt(OPT_DESTINATION).argName("path").hasArg().build());
 
 		options.addOption(Option.builder("o").longOpt(OPT_OVERWRITE).build());
+		options.addOption(Option.builder().longOpt(OPT_DELETE).build());
 
 		options.addOption(Option.builder().longOpt(OPT_RENAME).desc("rename files according to their capture date").build());
 		options.addOption(Option.builder().longOpt(OPT_STAMP).desc("print capture date in image").build());
