@@ -1,5 +1,9 @@
 package com.zimmerbell.photo_utils;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -10,27 +14,27 @@ public class Main {
 	private final static String OPT_HELP = "help";
 	public final static String OPT_SOURCE = "src";
 	public final static String OPT_DESTINATION = "dest";
-	
+
 	public final static String OPT_OVERWRITE = "overwrite";
 
-	public  final static String OPT_STAMP = "stamp";
+	public final static String OPT_STAMP = "stamp";
 	public final static String OPT_RENAME = "rename";
-	
+	public final static List<String> CHANGE_OPTIONS = Collections.unmodifiableList(Arrays.asList(new String[] { OPT_STAMP }));
 
 	public static void main(String[] args) throws Throwable {
 		Options options = new Options();
 
 		options.addOption(Option.builder("h").longOpt(OPT_HELP).build());
-		options.addOption(Option.builder("s").longOpt(OPT_SOURCE).argName("path").hasArg().build());
+		options.addOption(Option.builder("s").longOpt(OPT_SOURCE).argName("path").hasArg().required().build());
 		options.addOption(Option.builder("d").longOpt(OPT_DESTINATION).argName("path").hasArg().build());
-		
-		options.addOption(Option.builder("w").longOpt(OPT_OVERWRITE).build());
+
+		options.addOption(Option.builder("o").longOpt(OPT_OVERWRITE).build());
 
 		options.addOption(Option.builder().longOpt(OPT_STAMP).build());
 		options.addOption(Option.builder().longOpt(OPT_RENAME).build());
 
 		CommandLine cl = new DefaultParser().parse(options, args);
-		if(cl.hasOption(OPT_HELP)){
+		if (cl.hasOption(OPT_HELP)) {
 			new HelpFormatter().printHelp("photo-utils", options);
 			return;
 		}

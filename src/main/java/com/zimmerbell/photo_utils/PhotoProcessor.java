@@ -35,14 +35,30 @@ public class PhotoProcessor {
 	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
 	private final static UnaryOperator<Integer> MARGIN = (Integer imageHeight) -> 10;
 
-	private CommandLine cl;
-	private Set<File> newFiles = new HashSet<File>();
+	private final CommandLine cl;
+	private final Set<File> newFiles = new HashSet<File>();
+	private final boolean moveFiles;
+	private boolean existsChangeOption = false;
 
 	public PhotoProcessor(CommandLine cl) throws Throwable {
 		this.cl = cl;
 
-		File sourceDirectory = new File(cl.getOptionValue(Main.OPT_SOURCE, System.getProperty("user.dir")));
-		File destinationDirectory = new File(cl.getOptionValue(Main.OPT_DESTINATION, System.getProperty("user.dir")));
+		File sourceDirectory = new File(cl.getOptionValue(Main.OPT_SOURCE));
+		File destinationDirectory;
+		if (cl.hasOption(Main.OPT_DESTINATION)) {
+			destinationDirectory = new File(cl.getOptionValue(Main.OPT_DESTINATION));
+		} else {
+			destinationDirectory = sourceDirectory;
+		}
+
+		moveFiles = sourceDirectory.equals(destinationDirectory);
+
+		for (String changeOption : Main.CHANGE_OPTIONS) {
+			if (cl.hasOption(changeOption)) {
+				existsChangeOption = true;
+				break;
+			}
+		}
 
 		processFilesInDirectory(sourceDirectory, destinationDirectory);
 	}
@@ -72,20 +88,13 @@ public class PhotoProcessor {
 				File outFile;
 				if (cl.hasOption(Main.OPT_RENAME)) {
 					outFile = destinationFile(outDirectory, file.getName(), date);
-				}else{
+				} else {
 					outFile = new File(outDirectory, file.getName());
 				}
-				
+
 				newFiles.add(outFile);
 
-				try {
-					processFile(file, outFile, date);
-				} catch (Exception e) {
-					log(file + ": " + e.getMessage());
-					if (cl.hasOption(Main.OPT_OVERWRITE) || !outFile.exists()) {
-						FileUtils.copyFile(file, outFile);
-					}
-				}
+				processFile(file, outFile, date);
 			}
 		} catch (Throwable e) {
 			log("error while processing directory: " + directory);
@@ -107,50 +116,67 @@ public class PhotoProcessor {
 		do {
 			newFile = new File(destinationDirectory, newName + (copy == 0 ? "" : " (" + copy + ")") + (ext == null ? "" : "." + ext.toLowerCase()));
 			copy++;
-		//} while (newFile.exists());
-		}while(newFiles.contains(newFile));
+			// } while (newFile.exists());
+		} while (newFiles.contains(newFile));
 
 		return newFile;
 	}
 
-	private void processFile(final File file, final File outFile, Date date) throws ImageProcessingException, IOException {
-		if (outFile.exists() && !cl.hasOption(Main.OPT_OVERWRITE)) {
+	private void processFile(final File srcFile, final File destFile, Date date) throws ImageProcessingException, IOException {
+		if (destFile.exists() && !cl.hasOption(Main.OPT_OVERWRITE)) {
 			return;
 		}
-		log(date + ": " + file + " -> " + outFile);
+		if (moveFiles && !existsChangeOption) {
+			// only move file
+			FileUtils.moveFile(srcFile, destFile);
+			return;
+		}
 
-		ImageInputStream imageInputStream = ImageIO.createImageInputStream(file);
-		Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
-		if (!imageReaders.hasNext()) {
-			log("no image reader found: " + file);
-		} else {
-			ImageReader imageReader = imageReaders.next();
-			imageReader.setInput(imageInputStream, true);
+		try {
+			log(date + ": " + srcFile + " -> " + destFile);
 
-			try {
-				// read image
-				IIOImage iioImage = imageReader.readAll(0, null);
-				BufferedImage image = (BufferedImage) iioImage.getRenderedImage();
+			ImageInputStream imageInputStream = ImageIO.createImageInputStream(srcFile);
+			Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
+			if (!imageReaders.hasNext()) {
+				log("no image reader found: " + srcFile);
+			} else {
+				ImageReader imageReader = imageReaders.next();
+				imageReader.setInput(imageInputStream, true);
 
-				// process image
-				processPhoto(image, date, outFile.getName());
+				try {
+					// read image
+					IIOImage iioImage = imageReader.readAll(0, null);
+					BufferedImage image = (BufferedImage) iioImage.getRenderedImage();
 
-				// wirte image
-				ImageWriter writer = ImageIO.getImageWriter(imageReader);
-				ImageWriteParam param = writer.getDefaultWriteParam();
-				param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
-				writer.setOutput(ImageIO.createImageOutputStream(outFile));
-				writer.write(null, iioImage, param);
-				return;
-			} catch (IIOException e) {
-				log(e.getMessage());
+					// process image
+					processPhoto(image, date, destFile.getName());
+
+					// write image
+					ImageWriter writer = ImageIO.getImageWriter(imageReader);
+					ImageWriteParam param = writer.getDefaultWriteParam();
+					param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
+					writer.setOutput(ImageIO.createImageOutputStream(destFile));
+					writer.write(null, iioImage, param);
+					return;
+				} catch (IIOException e) {
+					log(e.getMessage());
+				}
+			}
+
+			// fallback for reading/reading image
+			BufferedImage image = ImageIO.read(srcFile);
+			processPhoto(image, date, destFile.getName());
+			ImageIO.write(image, "jpg", destFile);
+		} catch (Exception e) {
+			log(srcFile + ": " + e.getMessage());
+			if (cl.hasOption(Main.OPT_OVERWRITE) || !destFile.exists()) {
+				FileUtils.copyFile(srcFile, destFile);
 			}
 		}
 
-		// fallback for reading/reading image
-		BufferedImage image = ImageIO.read(file);
-		processPhoto(image, date, outFile.getName());
-		ImageIO.write(image, "jpg", outFile);
+		if (moveFiles && destFile.exists()) {
+			srcFile.delete();
+		}
 	}
 
 	private void processPhoto(BufferedImage image, Date date, String fileName) throws IOException {
@@ -161,7 +187,7 @@ public class PhotoProcessor {
 
 	private void stampPhoto(BufferedImage image, Date date, String fileName) throws IOException {
 		log("stamp photo");
-		
+
 		String dateString = "";
 		if (date != null) {
 			dateString = DATE_FORMAT.format(date);
