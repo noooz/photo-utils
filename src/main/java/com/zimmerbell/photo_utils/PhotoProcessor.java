@@ -37,7 +37,7 @@ public class PhotoProcessor {
 
 	private final CommandLine cl;
 	private final Set<File> newFiles = new HashSet<File>();
-	private final boolean moveFiles;
+	private final boolean deleteSource;
 	private boolean existsChangeOption = false;
 
 	public PhotoProcessor(CommandLine cl) throws Throwable {
@@ -51,7 +51,7 @@ public class PhotoProcessor {
 			destinationDirectory = sourceDirectory;
 		}
 
-		moveFiles = sourceDirectory.equals(destinationDirectory);
+		deleteSource = sourceDirectory.equals(destinationDirectory);
 
 		for (String changeOption : Main.CHANGE_OPTIONS) {
 			if (cl.hasOption(changeOption)) {
@@ -126,14 +126,14 @@ public class PhotoProcessor {
 		if (destFile.exists() && !cl.hasOption(Main.OPT_OVERWRITE)) {
 			return;
 		}
-		if (moveFiles && !existsChangeOption) {
+		log(date + ": " + srcFile + " -> " + destFile);
+		
+		if (deleteSource && !existsChangeOption) {
 			// only move file
 			FileUtils.moveFile(srcFile, destFile);
 			return;
 		}
-
 		try {
-			log(date + ": " + srcFile + " -> " + destFile);
 
 			ImageInputStream imageInputStream = ImageIO.createImageInputStream(srcFile);
 			Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
@@ -174,7 +174,7 @@ public class PhotoProcessor {
 			}
 		}
 
-		if (moveFiles && destFile.exists()) {
+		if (deleteSource && destFile.exists()) {
 			srcFile.delete();
 		}
 	}
