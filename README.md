@@ -1,5 +1,7 @@
 # photo-utils
 
+Batch rename, resize and stamp images.
+
 ```
 usage: photo-utils
  -d,--dest <path>
