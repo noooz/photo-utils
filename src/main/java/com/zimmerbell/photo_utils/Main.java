@@ -26,9 +26,11 @@ public class Main {
 	public static void main(String[] args) throws Throwable {
 		Options options = new Options();
 
+		Option optionSrc, optionDest;
+
 		options.addOption(Option.builder("h").longOpt(OPT_HELP).build());
-		options.addOption(Option.builder("s").longOpt(OPT_SOURCE).argName("path").hasArg().build());
-		options.addOption(Option.builder("d").longOpt(OPT_DESTINATION).argName("path").hasArg().build());
+		options.addOption(optionSrc = Option.builder("s").longOpt(OPT_SOURCE).argName("path").hasArg().build());
+		options.addOption(optionDest = Option.builder("d").longOpt(OPT_DESTINATION).argName("path").hasArg().build());
 
 		options.addOption(Option.builder("o").longOpt(OPT_OVERWRITE).desc("overwrite existing files").build());
 		options.addOption(Option.builder().longOpt(OPT_DELETE).desc("delete extraneous files from dest dirs").build());
@@ -38,8 +40,11 @@ public class Main {
 		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("size").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
 
 		CommandLine cl = new DefaultParser().parse(options, args);
-		if (cl.hasOption(OPT_HELP)) {
-			new HelpFormatter().printHelp("photo-utils", options);
+		if (cl.hasOption(OPT_HELP) || args.length == 0) {
+			String footer = "\nEXAMPLES\n" //
+					+ "copy all photos from dir1 to dir2 and stamp them with their capture date\n" //
+					+ "    photo-utils -s dir1 -d dir2 --stamp\n";
+			new HelpFormatter().printHelp("photo-utils --" + optionSrc.getLongOpt() + " " + optionSrc.getArgName() + " --" + optionDest.getLongOpt() + " " + optionDest.getArgName() + " [OPTIONS]", "", options, footer);
 			return;
 		}
 
