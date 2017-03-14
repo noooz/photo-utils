@@ -41,9 +41,12 @@ public class Main {
 
 		CommandLine cl = new DefaultParser().parse(options, args);
 		if (cl.hasOption(OPT_HELP) || args.length == 0) {
+			String header = "Batch rename, resize and stamp images.";
 			String footer = "\nEXAMPLES\n" //
 					+ "copy all photos from dir1 to dir2 and stamp them with their capture date\n" //
 					+ "    photo-utils -s dir1 -d dir2 --stamp\n";
+			System.out.println(header);
+			System.out.println();
 			new HelpFormatter().printHelp("photo-utils --" + optionSrc.getLongOpt() + " " + optionSrc.getArgName() + " --" + optionDest.getLongOpt() + " " + optionDest.getArgName() + " [OPTIONS]", "", options, footer);
 			return;
 		}
