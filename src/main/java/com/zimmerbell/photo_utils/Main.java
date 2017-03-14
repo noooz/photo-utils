@@ -29,15 +29,15 @@ public class Main {
 		Option optionSrc, optionDest;
 
 		options.addOption(Option.builder("h").longOpt(OPT_HELP).build());
-		options.addOption(optionSrc = Option.builder("s").longOpt(OPT_SOURCE).argName("path").hasArg().build());
-		options.addOption(optionDest = Option.builder("d").longOpt(OPT_DESTINATION).argName("path").hasArg().build());
+		options.addOption(optionSrc = Option.builder("s").longOpt(OPT_SOURCE).argName("PATH").hasArg().build());
+		options.addOption(optionDest = Option.builder("d").longOpt(OPT_DESTINATION).argName("PATH").hasArg().build());
 
 		options.addOption(Option.builder("o").longOpt(OPT_OVERWRITE).desc("overwrite existing files").build());
 		options.addOption(Option.builder().longOpt(OPT_DELETE).desc("delete extraneous files from dest dirs").build());
 
 		options.addOption(Option.builder().longOpt(OPT_RENAME).desc("rename files according to their capture date").build());
 		options.addOption(Option.builder().longOpt(OPT_STAMP).desc("write capture date in image").build());
-		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("size").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
+		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("SIZE").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
 
 		CommandLine cl = new DefaultParser().parse(options, args);
 		if (cl.hasOption(OPT_HELP) || args.length == 0) {
