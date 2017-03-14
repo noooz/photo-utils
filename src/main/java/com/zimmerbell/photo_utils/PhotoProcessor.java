@@ -34,6 +34,7 @@ public class PhotoProcessor {
 	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmm");
 	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
 	private final static UnaryOperator<Integer> MARGIN = (Integer imageHeight) -> 10;
+	public final static int RESIZE_DEFAULT = 1900;
 
 	private final CommandLine cl;
 	private final Set<File> newFiles = new HashSet<File>();
@@ -70,7 +71,7 @@ public class PhotoProcessor {
 	private void processFilesInDirectory(File srcDirectory, File destDirectory) throws Throwable {
 		try {
 			destDirectory.mkdirs();
-			
+
 			final Set<String> fileNames = new HashSet<>();
 			for (File file : srcDirectory.listFiles()) {
 				if (file.getName().startsWith(".")) {
@@ -99,16 +100,16 @@ public class PhotoProcessor {
 				fileNames.add(outFile.getName());
 				processFile(file, outFile, date);
 			}
-			
+
 			// delete unknown files in destination directory
-			if(cl.hasOption(Main.OPT_DELETE)){
-				for(File file : destDirectory.listFiles()){
-					if(!fileNames.contains(file.getName())){
+			if (cl.hasOption(Main.OPT_DELETE)) {
+				for (File file : destDirectory.listFiles()) {
+					if (!fileNames.contains(file.getName())) {
 						FileUtils.forceDelete(file);
 					}
 				}
 			}
-			
+
 		} catch (Throwable e) {
 			log("error while processing directory: " + srcDirectory);
 			throw e;
@@ -140,7 +141,7 @@ public class PhotoProcessor {
 			return;
 		}
 		log(date + ": " + srcFile + " -> " + destFile);
-		
+
 		if (deleteSource && !existsChangeOption) {
 			// only move file
 			FileUtils.moveFile(srcFile, destFile);
@@ -159,10 +160,13 @@ public class PhotoProcessor {
 				try {
 					// read image
 					IIOImage iioImage = imageReader.readAll(0, null);
-					BufferedImage image = (BufferedImage) iioImage.getRenderedImage();
+					final BufferedImage image = (BufferedImage) iioImage.getRenderedImage();
 
 					// process image
-					processPhoto(image, date, destFile.getName());
+					BufferedImage processedImage = processImage(image, date, destFile.getName());
+					if(image != processedImage){
+						iioImage.setRenderedImage(processedImage);
+					}
 
 					// write image
 					ImageWriter writer = ImageIO.getImageWriter(imageReader);
@@ -178,7 +182,7 @@ public class PhotoProcessor {
 
 			// fallback for reading/reading image
 			BufferedImage image = ImageIO.read(srcFile);
-			processPhoto(image, date, destFile.getName());
+			image = processImage(image, date, destFile.getName());
 			ImageIO.write(image, "jpg", destFile);
 		} catch (Exception e) {
 			log(srcFile + ": " + e.getMessage());
@@ -192,13 +196,43 @@ public class PhotoProcessor {
 		}
 	}
 
-	private void processPhoto(BufferedImage image, Date date, String fileName) throws IOException {
-		if (cl.hasOption(Main.OPT_STAMP)) {
-			stampPhoto(image, date, fileName);
+	private BufferedImage processImage(BufferedImage image, Date date, String fileName) throws IOException {
+		if (cl.hasOption(Main.OPT_RESIZE)) {
+			image = imageResize(image);
 		}
+		if (cl.hasOption(Main.OPT_STAMP)) {
+			imageStamp(image, date, fileName);
+		}
+		return image;
 	}
 
-	private void stampPhoto(BufferedImage image, Date date, String fileName) throws IOException {
+	private BufferedImage imageResize(BufferedImage image) {
+		int max = Integer.parseInt(cl.getOptionValue(Main.OPT_RESIZE, Integer.toString(RESIZE_DEFAULT)));
+
+		int h = image.getHeight();
+		int w = image.getWidth();
+		double scale = 1;
+		if (h > w) {
+			scale = max / (double) h;
+		} else {
+			scale = max / (double) w;
+		}
+		if (scale >= 1) {
+			return image;
+		}
+
+		int newHeight = (int) (h * scale);
+		int newWidth = (int) (w * scale);
+		
+		log("resize to "+  newHeight + "x" + newWidth);
+
+		BufferedImage newImage = new BufferedImage(newWidth, newHeight, image.getType());
+		newImage.createGraphics().drawImage(image, 0, 0, newWidth - 1, newHeight - 1, 0, 0, w - 1, h - 1, null);
+		
+		return newImage;
+	}
+
+	private void imageStamp(BufferedImage image, Date date, String fileName) throws IOException {
 		log("stamp photo");
 
 		String dateString = "";

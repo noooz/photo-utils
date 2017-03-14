@@ -30,12 +30,12 @@ public class Main {
 		options.addOption(Option.builder("s").longOpt(OPT_SOURCE).argName("path").hasArg().build());
 		options.addOption(Option.builder("d").longOpt(OPT_DESTINATION).argName("path").hasArg().build());
 
-		options.addOption(Option.builder("o").longOpt(OPT_OVERWRITE).build());
-		options.addOption(Option.builder().longOpt(OPT_DELETE).build());
+		options.addOption(Option.builder("o").longOpt(OPT_OVERWRITE).desc("overwrite existing files").build());
+		options.addOption(Option.builder().longOpt(OPT_DELETE).desc("delete extraneous files from dest dirs").build());
 
 		options.addOption(Option.builder().longOpt(OPT_RENAME).desc("rename files according to their capture date").build());
-		options.addOption(Option.builder().longOpt(OPT_STAMP).desc("print capture date in image").build());
-		options.addOption(Option.builder().longOpt(OPT_RESIZE).desc("resize image").build());
+		options.addOption(Option.builder().longOpt(OPT_STAMP).desc("write capture date in image").build());
+		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("size").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
 
 		CommandLine cl = new DefaultParser().parse(options, args);
 		if (cl.hasOption(OPT_HELP)) {
