@@ -11,3 +11,9 @@ usage: photo-utils
  -s,--src <path>
     --stamp           write capture date in image
 ```
+
+## examples
+
+copy all photos from dir1 to dir2 and stamp them with their capture date
+
+	photo-utils -s dir1 -d dir2 --stamp
