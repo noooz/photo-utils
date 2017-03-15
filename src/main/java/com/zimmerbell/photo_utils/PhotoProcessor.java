@@ -31,7 +31,9 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class PhotoProcessor {
-	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmm");
+	private final static SimpleDateFormat DATE_FORMAT_FILE = new SimpleDateFormat("yyyyMMdd_HHmm");
+	private final static SimpleDateFormat DATE_FORMAT_STAMP = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	
 	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
 	private final static UnaryOperator<Integer> MARGIN = (Integer imageHeight) -> 10;
 	public final static int RESIZE_DEFAULT = 1900;
@@ -122,7 +124,7 @@ public class PhotoProcessor {
 		if (date == null) {
 			newName = FilenameUtils.getBaseName(fileName);
 		} else {
-			newName = DATE_FORMAT.format(date);
+			newName = DATE_FORMAT_FILE.format(date);
 		}
 
 		String ext = FilenameUtils.getExtension(fileName);
@@ -238,7 +240,7 @@ public class PhotoProcessor {
 
 		String dateString = "";
 		if (date != null) {
-			dateString = DATE_FORMAT.format(date);
+			dateString = DATE_FORMAT_STAMP.format(date);
 		} else {
 			int idx = fileName.lastIndexOf('.');
 			dateString = idx < 0 ? fileName : fileName.substring(0, idx);
