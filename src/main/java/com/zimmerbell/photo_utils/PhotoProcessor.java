@@ -84,21 +84,22 @@ public class PhotoProcessor {
 					}
 					continue;
 				}
-
-				ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
-				Date date = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-
-				File outFile;
-				if (cl.hasOption(Main.OPT_RENAME)) {
-					outFile = destinationFile(destDirectory, file.getName(), date);
-				} else {
-					outFile = new File(destDirectory, file.getName());
+				
+				File outFile = new File(destDirectory, file.getName());
+				try{
+					ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
+					Date date = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+	
+					if (cl.hasOption(Main.OPT_RENAME)) {
+						outFile = destinationFile(destDirectory, file.getName(), date);
+					}
+	
+					newFiles.add(outFile);
+					processFile(file, outFile, date);
+				}catch(com.drew.imaging.ImageProcessingException e){
+					FileUtils.copyFile(file, outFile);
 				}
-
-				newFiles.add(outFile);
-
 				fileNames.add(outFile.getName());
-				processFile(file, outFile, date);
 			}
 
 			// delete unknown files in destination directory
