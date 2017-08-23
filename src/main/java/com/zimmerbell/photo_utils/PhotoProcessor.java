@@ -46,7 +46,7 @@ public class PhotoProcessor {
 	private final static Logger LOG = LoggerFactory.getLogger(PhotoProcessor.class);
 	
 	private final static SimpleDateFormat DATE_FORMAT_FILE = new SimpleDateFormat("yyyyMMdd_HHmm");
-	private final static SimpleDateFormat DATE_FORMAT_STAMP = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	public final static SimpleDateFormat DATE_FORMAT_STAMP = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private final static SimpleDateFormat DATE_FORMAT_EXIF = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
 	
 	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);

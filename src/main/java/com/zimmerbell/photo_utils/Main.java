@@ -39,7 +39,7 @@ public class Main {
 		options.addOption(Option.builder().longOpt(OPT_RENAME).desc("rename files according to their capture date").build());
 		options.addOption(Option.builder().longOpt(OPT_STAMP).desc("write capture date in image").build());
 		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("SIZE").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
-		options.addOption(Option.builder().longOpt(OPT_FIXDATE).argName("DATE").hasArg().desc("fix EXIF with this date, if date is missing").build());
+		options.addOption(Option.builder().longOpt(OPT_FIXDATE).argName("DATE").hasArg().desc("fix EXIF with this date, if date is missing. Date format: " + PhotoProcessor.DATE_FORMAT_STAMP.toPattern()).build());
 
 		CommandLine cl = new DefaultParser().parse(options, args);
 		if (cl.hasOption(OPT_HELP) || args.length == 0) {
