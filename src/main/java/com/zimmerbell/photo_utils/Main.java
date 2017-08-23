@@ -21,6 +21,7 @@ public class Main {
 	public final static String OPT_RENAME = "rename";
 	public final static String OPT_STAMP = "stamp";
 	public final static String OPT_RESIZE = "resize";
+	public final static String OPT_FIXDATE = "fixdate";
 	public final static List<String> CHANGE_OPTIONS = Collections.unmodifiableList(Arrays.asList(new String[] { OPT_STAMP, OPT_RESIZE }));
 
 	public static void main(String[] args) throws Throwable {
@@ -38,6 +39,7 @@ public class Main {
 		options.addOption(Option.builder().longOpt(OPT_RENAME).desc("rename files according to their capture date").build());
 		options.addOption(Option.builder().longOpt(OPT_STAMP).desc("write capture date in image").build());
 		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("SIZE").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
+		options.addOption(Option.builder().longOpt(OPT_FIXDATE).argName("DATE").hasArg().desc("fix EXIF with this date, if date is missing").build());
 
 		CommandLine cl = new DefaultParser().parse(options, args);
 		if (cl.hasOption(OPT_HELP) || args.length == 0) {
