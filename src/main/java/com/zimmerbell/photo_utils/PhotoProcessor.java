@@ -189,6 +189,9 @@ public class PhotoProcessor {
 		}
 
 		if (!existsChangeOption) {
+			if(srcFile.equals(destFile)) {
+				return true;
+			}
 			if(deleteSource) {
 				// only move file
 				LOG.info("move: {} -> {}", srcFile, destFile);
@@ -247,7 +250,7 @@ public class PhotoProcessor {
 			}
 		}
 
-		if (deleteSource && destFile.exists()) {
+		if (deleteSource && destFile.exists() && !srcFile.equals(destFile)) {
 			srcFile.delete();
 		}
 		
