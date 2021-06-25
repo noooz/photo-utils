@@ -44,12 +44,13 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class PhotoProcessor {
 	private final static Logger LOG = LoggerFactory.getLogger(PhotoProcessor.class);
-	
+
 	private final static SimpleDateFormat DATE_FORMAT_FILE = new SimpleDateFormat("yyyyMMdd_HHmm");
 	public final static SimpleDateFormat DATE_FORMAT_STAMP = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private final static SimpleDateFormat DATE_FORMAT_EXIF = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
-	
-	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math.max((int) (imageHeight * 0.025), 10);
+
+	private final static UnaryOperator<Integer> FONT_SIZE = (Integer imageHeight) -> Math
+			.max((int) (imageHeight * 0.025), 10);
 	private final static UnaryOperator<Integer> MARGIN = (Integer imageHeight) -> 10;
 	public final static int RESIZE_DEFAULT = 1900;
 
@@ -61,7 +62,7 @@ public class PhotoProcessor {
 
 	public PhotoProcessor(CommandLine cl) throws Throwable {
 		this.cl = cl;
-		
+
 		final File sourceDirectory = new File(cl.getOptionValue(Main.OPT_SOURCE, System.getProperty("user.dir")));
 		File destinationDirectory;
 		if (cl.hasOption(Main.OPT_DESTINATION)) {
@@ -69,8 +70,8 @@ public class PhotoProcessor {
 		} else {
 			destinationDirectory = sourceDirectory;
 		}
-		
-		if(cl.hasOption(Main.OPT_FIXDATE)) {
+
+		if (cl.hasOption(Main.OPT_FIXDATE)) {
 			fixDate = DATE_FORMAT_STAMP.parse(cl.getOptionValue(Main.OPT_FIXDATE));
 			System.out.println("fixDate: " + fixDate);
 		}
@@ -83,28 +84,28 @@ public class PhotoProcessor {
 				break;
 			}
 		}
-		
-		if(cl.hasOption(Main.OPT_LIST)) {
+
+		if (cl.hasOption(Main.OPT_LIST)) {
 			listFiles(sourceDirectory);
 			return;
 		}
 
 		processFilesInDirectory(sourceDirectory, destinationDirectory);
 	}
-	
+
 	private void listFiles(File directory) {
-		for(final File file : directory.listFiles()) {
+		for (final File file : directory.listFiles()) {
 			if (file.getName().startsWith(".")) {
 				continue;
 			}
-			
+
 			try {
-				final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
+				final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file)
+						.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
 				final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-				
+
 				final String exifDateString = exif.getString(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-				
-				
+
 				LOG.info("{} [{}] ({})", exifDate, exifDateString, file.getName());
 			} catch (final Throwable e) {
 				LOG.error("error while processing file: " + file, e);
@@ -128,22 +129,24 @@ public class PhotoProcessor {
 					}
 					continue;
 				}
-				
+
 				File outFile = new File(destDirectory, file.getName());
-				try{
-					final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file).getDirectory(ExifSubIFDDirectory.class);
+				try {
+					final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file)
+							.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+					
 					final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 					final Date date = exifDate != null ? exifDate : fixDate;
-	
+
 					if (cl.hasOption(Main.OPT_RENAME)) {
 						outFile = destinationFile(destDirectory, file.getName(), date);
 					}
-	
+
 					newFiles.add(outFile);
-					if(processFile(file, outFile, date) && exifDate == null && fixDate != null) {
+					if (processFile(file, outFile, date) && exifDate == null && fixDate != null) {
 						fixExifDate(outFile);
 					}
-				}catch(final com.drew.imaging.ImageProcessingException e){
+				} catch (final com.drew.imaging.ImageProcessingException e) {
 					FileUtils.copyFile(file, outFile);
 				}
 				fileNames.add(outFile.getName());
@@ -176,59 +179,61 @@ public class PhotoProcessor {
 		File newFile;
 		int copy = 0;
 		do {
-			newFile = new File(destinationDirectory, newName + (copy == 0 ? "" : " (" + copy + ")") + (ext == null ? "" : "." + ext.toLowerCase()));
+			newFile = new File(destinationDirectory,
+					newName + (copy == 0 ? "" : " (" + copy + ")") + (ext == null ? "" : "." + ext.toLowerCase()));
 			copy++;
 			// } while (newFile.exists());
 		} while (newFiles.contains(newFile));
 
 		return newFile;
 	}
-	
+
 	private void fixExifDate(final File file) throws Exception {
 		LOG.info("\tset exif date: {}", DATE_FORMAT_EXIF.format(fixDate));
-		
+
 		final ImageMetadata metadata = Imaging.getMetadata(file);
-        final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
-        final TiffImageMetadata exif = jpegMetadata == null ? null : jpegMetadata.getExif();
-        final TiffOutputSet outputSet = exif == null ? new TiffOutputSet() : exif.getOutputSet();
-        final TiffOutputDirectory exifDirectory = outputSet.getOrCreateExifDirectory();
-    	exifDirectory.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, DATE_FORMAT_EXIF.format(fixDate));
-    	
-    	final File tempFile = File.createTempFile("exif-", ".jpg");
-    	try {
-	    	try(FileOutputStream out = new FileOutputStream(tempFile)){
-	    		new ExifRewriter().updateExifMetadataLossless(file, out, outputSet);	    		
-	    	}
-	    	FileUtils.forceDelete(file);
-    		FileUtils.moveFile(tempFile, file);
-    	}catch(final Throwable e) {
-    		LOG.info("\ttemp file: " + tempFile.getAbsolutePath());
-    		throw e;
+		final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+		final TiffImageMetadata exif = jpegMetadata == null ? null : jpegMetadata.getExif();
+		final TiffOutputSet outputSet = exif == null ? new TiffOutputSet() : exif.getOutputSet();
+		final TiffOutputDirectory exifDirectory = outputSet.getOrCreateExifDirectory();
+		exifDirectory.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, DATE_FORMAT_EXIF.format(fixDate));
+
+		final File tempFile = File.createTempFile("exif-", ".jpg");
+		try {
+			try (FileOutputStream out = new FileOutputStream(tempFile)) {
+				new ExifRewriter().updateExifMetadataLossless(file, out, outputSet);
+			}
+			FileUtils.forceDelete(file);
+			FileUtils.moveFile(tempFile, file);
+		} catch (final Throwable e) {
+			LOG.info("\ttemp file: " + tempFile.getAbsolutePath());
+			throw e;
 		}
 	}
-	
-	private boolean processFile(final File srcFile, final File destFile, Date date) throws ImageProcessingException, IOException {
+
+	private boolean processFile(final File srcFile, final File destFile, Date date)
+			throws ImageProcessingException, IOException {
 		if (destFile.exists() && !cl.hasOption(Main.OPT_OVERWRITE)) {
 			LOG.info("skip: {} -> {}", srcFile, destFile);
 			return false;
 		}
 
 		if (!existsChangeOption) {
-			if(srcFile.equals(destFile)) {
+			if (srcFile.equals(destFile)) {
 				return true;
 			}
-			if(deleteSource) {
+			if (deleteSource) {
 				// only move file
 				LOG.info("move: {} -> {}", srcFile, destFile);
 				FileUtils.moveFile(srcFile, destFile);
-			}else {
+			} else {
 				// only copy file
 				LOG.info("copy: {} -> {}", srcFile, destFile);
 				FileUtils.copyFile(srcFile, destFile);
 			}
 			return true;
 		}
-		
+
 		LOG.info("rewrite: {} -> {}", srcFile, destFile);
 		try {
 			final ImageInputStream imageInputStream = ImageIO.createImageInputStream(srcFile);
@@ -246,12 +251,12 @@ public class PhotoProcessor {
 
 					// process image
 					final BufferedImage processedImage = processImage(image, date, destFile.getName());
-					if(image != processedImage){
+					if (image != processedImage) {
 						iioImage.setRenderedImage(processedImage);
 					}
 
 					// write image
-					try(ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(destFile)){
+					try (ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(destFile)) {
 						final ImageWriter writer = ImageIO.getImageWriter(imageReader);
 						final ImageWriteParam param = writer.getDefaultWriteParam();
 						param.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
@@ -278,7 +283,7 @@ public class PhotoProcessor {
 		if (deleteSource && destFile.exists() && !srcFile.equals(destFile)) {
 			srcFile.delete();
 		}
-		
+
 		return true;
 	}
 
@@ -309,12 +314,12 @@ public class PhotoProcessor {
 
 		final int newHeight = (int) (h * scale);
 		final int newWidth = (int) (w * scale);
-		
-		LOG.info("\tresize to "+  newHeight + "x" + newWidth);
+
+		LOG.info("\tresize to " + newHeight + "x" + newWidth);
 
 		final BufferedImage newImage = new BufferedImage(newWidth, newHeight, image.getType());
 		newImage.createGraphics().drawImage(image, 0, 0, newWidth - 1, newHeight - 1, 0, 0, w - 1, h - 1, null);
-		
+
 		return newImage;
 	}
 
