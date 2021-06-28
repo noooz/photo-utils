@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -106,10 +107,12 @@ public class PhotoProcessor {
 
 			try {
 				final Metadata metadata = ImageMetadataReader.readMetadata(file);
-
+				
 				final ExifSubIFDDirectory exif = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-				final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+				final Date exifDate = exif == null ? null
+						: exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
 				final String exifDateString = exif.getString(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+				
 
 				System.out.println(file.getName());
 				System.out.println(String.format("\tdirectories: %s",
@@ -152,7 +155,8 @@ public class PhotoProcessor {
 					final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file)
 							.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
 
-					final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+					final Date exifDate = exif == null ? null
+							: exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
 					final Date date = exifDate != null ? exifDate : fixDate;
 
 					if (cl.hasOption(Main.OPT_RENAME)) {
