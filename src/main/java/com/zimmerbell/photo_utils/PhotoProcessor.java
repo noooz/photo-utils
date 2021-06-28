@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
@@ -40,6 +42,9 @@ import org.slf4j.LoggerFactory;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 public class PhotoProcessor {
@@ -100,13 +105,25 @@ public class PhotoProcessor {
 			}
 
 			try {
-				final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file)
-						.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-				final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+				final Metadata metadata = ImageMetadataReader.readMetadata(file);
 
+				final ExifSubIFDDirectory exif = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+				final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 				final String exifDateString = exif.getString(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 
-				LOG.info("{} [{}] ({})", exifDate, exifDateString, file.getName());
+				System.out.println(file.getName());
+				System.out.println(String.format("\tdirectories: %s",
+						StreamSupport.stream(metadata.getDirectories().spliterator(), false)
+								.map(d -> d.getClass().getSimpleName()).collect(Collectors.joining(","))));
+				
+				System.out.println(String.format("\tdate: %s, dateString: %s", exifDate, exifDateString));
+
+				for (final Directory d : metadata.getDirectories()) {
+					System.out.println(String.format("\t%s:", d.getClass().getSimpleName()));
+					for (final Tag t : d.getTags()) {
+						System.out.println(String.format("\t\t%s: %s", t.getTagName(), d.getString(t.getTagType())));
+					}
+				}
 			} catch (final Throwable e) {
 				LOG.error("error while processing file: " + file, e);
 			}
@@ -134,7 +151,7 @@ public class PhotoProcessor {
 				try {
 					final ExifSubIFDDirectory exif = ImageMetadataReader.readMetadata(file)
 							.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-					
+
 					final Date exifDate = exif == null ? null : exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
 					final Date date = exifDate != null ? exifDate : fixDate;
 
