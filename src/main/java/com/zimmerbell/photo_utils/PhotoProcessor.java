@@ -121,10 +121,13 @@ public class PhotoProcessor {
 				
 				System.out.println(String.format("\tdate: %s, dateString: %s", exifDate, exifDateString));
 
-				for (final Directory d : metadata.getDirectories()) {
-					System.out.println(String.format("\t%s:", d.getClass().getSimpleName()));
-					for (final Tag t : d.getTags()) {
-						System.out.println(String.format("\t\t%s: %s", t.getTagName(), d.getString(t.getTagType())));
+				if (this.cl.hasOption(Main.OPT_VERBOSE)) {
+					for (final Directory d : metadata.getDirectories()) {
+						System.out.println(String.format("\t%s:", d.getClass().getSimpleName()));
+						for (final Tag t : d.getTags()) {
+							System.out
+									.println(String.format("\t\t%s: %s", t.getTagName(), d.getString(t.getTagType())));
+						}
 					}
 				}
 			} catch (final Throwable e) {

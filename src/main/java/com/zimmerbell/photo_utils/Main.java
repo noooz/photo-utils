@@ -23,6 +23,7 @@ public class Main {
 	public final static String OPT_STAMP = "stamp";
 	public final static String OPT_RESIZE = "resize";
 	public final static String OPT_FIXDATE = "fixdate";
+	public final static String OPT_VERBOSE = "v";
 	public final static List<String> CHANGE_OPTIONS = Collections.unmodifiableList(Arrays.asList(new String[] { OPT_STAMP, OPT_RESIZE }));
 
 	public static void main(String[] args) throws Throwable {
@@ -42,6 +43,8 @@ public class Main {
 		options.addOption(Option.builder().longOpt(OPT_RESIZE).argName("SIZE").hasArg().optionalArg(true).desc("resize image (default: " + PhotoProcessor.RESIZE_DEFAULT + ")").build());
 		options.addOption(Option.builder().longOpt(OPT_FIXDATE).argName("DATE").hasArg().desc("fix EXIF with this date, if date is missing. Date format: " + PhotoProcessor.DATE_FORMAT_STAMP.toPattern()).build());
 		options.addOption(Option.builder().longOpt(OPT_LIST).desc("only list source files").build());
+		options.addOption(Option.builder(OPT_VERBOSE)
+				.desc("verbose output (e.g. in combination with --" + OPT_LIST + ")").build());
 
 		final CommandLine cl = new DefaultParser().parse(options, args);
 		if (cl.hasOption(OPT_HELP) || args.length == 0) {
